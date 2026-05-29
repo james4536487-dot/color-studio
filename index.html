@@ -311,7 +311,7 @@
 
         <!-- Шапка -->
         <div class="app-header">
-            <h1>Color Studio!</h1>
+            <h1>Color Studio</h1>
             <p>Премиальный рендеринг и кастомизация</p>
         </div>
 
@@ -441,7 +441,20 @@
             }
 
             const finalHex = colorPicker.color.hexString.toUpperCase();
-            tg.sendData(finalHex);
+            let cleanColor = finalHex.replace('#', '');
+            
+            navigator.clipboard.writeText(cleanColor).then(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showAlert(
+                        `Цвет #${cleanColor} скопирован!\n\nПросто вставь его в чат и отправь боту.`, 
+                        () => {
+                            window.Telegram.WebApp.close();
+                        }
+                    );
+                }
+            }).catch(err => {
+                console.error('Не удалось скопировать цвет: ', err);
+            });
         });
     </script>
 </body>
