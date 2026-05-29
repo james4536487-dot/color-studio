@@ -2,172 +2,421 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Палитра Цветов</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Premium Color Studio</title>
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --selected-color: #00ff88;
+            --accent-color: #00ffaa;
+            --accent-rgb: 0, 255, 170;
+            --bg-main: #060709;
+            --panel-bg: rgba(18, 20, 28, 0.6);
+            --panel-border: rgba(255, 255, 255, 0.04);
+            --text-muted: #7e8494;
         }
-        
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0d0e12;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
             color: #ffffff;
+            margin: 0;
+            padding: 20px 16px calc(20px + env(safe-area-inset-bottom)) 16px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            min-height: 100vh;
-            margin: 0;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            overflow: hidden;
-            /* Динамический живой фон, который слегка подсвечивается выбранным цветом */
-            background: radial-gradient(circle at center, rgba(13, 14, 18, 1) 0%, rgba(5, 5, 8, 1) 100%);
-            transition: background 0.4s ease;
+            overflow-x: hidden;
+            background: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.08) 0%, rgba(6, 7, 9, 1) 75%);
         }
 
-        /* Задний размытый фон для сочности цвета */
-        .glow-bg {
+        /* Живой неоновый бэкграунд */
+        .neon-glow {
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: var(--selected-color);
-            filter: blur(120px);
-            opacity: 0.15;
-            z-index: 1;
+            width: 400px;
+            height: 400px;
+            background: var(--accent-color);
+            filter: blur(140px);
+            opacity: 0.12;
             pointer-events: none;
-            top: 50%;
+            z-index: 0;
+            top: 25%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: background 0.3s ease;
+            transition: background 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .header {
+        .container {
+            width: 100%;
+            max-width: 400px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Шапка */
+        .app-header {
             text-align: center;
-            z-index: 2;
-            margin-top: 10px;
+            margin-bottom: 5px;
         }
 
-        .header h3 {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #a5a7b0 100%);
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.8px;
+            background: linear-gradient(135deg, #ffffff 30%, #a2a8b8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .header p {
-            font-size: 14px;
-            color: #707579;
+        .app-header p {
+            font-size: 13px;
+            color: var(--text-muted);
             margin: 0;
+            font-weight: 500;
         }
 
-        /* Контейнер для колеса */
-        .picker-container {
+        /* Интерактивный Мокап Рендера */
+        .mockup-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mockup-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mockup-title span {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-color);
+        }
+
+        .mockup-display {
+            height: 110px;
+            border-radius: 16px;
+            background-color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background-color 0.3s ease;
+        }
+
+        /* Сетка прозрачности внутри мокапа (как в Photoshop) */
+        .mockup-display::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.03;
+            background-image: linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+
+        .mockup-sticker {
+            font-size: 54px;
+            z-index: 1;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* Основной блок управления */
+        .studio-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+
+        /* Кастомизация колеса iro.js */
+        .wheel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wheel-center-info {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .hex-output {
+            font-family: monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 14px;
+            border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
         }
 
-        /* Вывод HEX-кода в реальном времени */
-        .color-value {
-            text-align: center;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 15px;
-            color: var(--selected-color);
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-            transition: color 0.2s ease;
+        /* Премиум Палитры Быстрого Выбора */
+        .section-title {
+            align-self: flex-start;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 5px 0 -5px 2px;
         }
 
-        /* Кнопка подтверждения */
-        .submit-btn {
-            position: relative;
-            z-index: 2;
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
             width: 100%;
-            max-width: 280px;
+        }
+
+        .preset-btn {
+            aspect-ratio: 1;
+            border-radius: 14px;
+            border: 2px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .preset-btn:active {
+            transform: scale(0.88);
+        }
+
+        .preset-btn.active {
+            border-color: #ffffff;
+            box-shadow: 0 0 15px var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        /* Главная кнопка отправки */
+        .action-button {
+            width: 100%;
             background: #ffffff;
             color: #000000;
             border: none;
-            padding: 16px 0;
+            padding: 18px;
             font-size: 16px;
-            font-weight: 600;
-            border-radius: 16px;
+            font-weight: 700;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
-            transition: all 0.2s ease;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.08);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 5px;
         }
 
-        .submit-btn:active {
-            transform: scale(0.97);
-            opacity: 0.9;
+        .action-button:active {
+            transform: scale(0.96);
+            background-color: #e2e8f0;
+        }
+
+        .action-button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
         }
     </style>
 </head>
 <body>
 
-    <div class="glow-bg" id="glowBg"></div>
+    <div class="neon-glow" id="neonGlow"></div>
 
-    <div class="header">
-        <h3>Выберите цвет</h3>
-        <p>Настройте идеальный фон для рендера</p>
-    </div>
-    
-    <div class="picker-container">
-        <div id="picker"></div>
-        <div class="color-value" id="hexDisplay">#00FF88</div>
-    </div>
+    <div class="container">
+        
+        <div class="app-header">
+            <h1>СТУДИЯ ЦВЕТА</h1>
+            <p>Премиальный рендеринг и кастомизация</p>
+        </div>
 
-    <button class="submit-btn" id="sendColor">Применить цвет</button>
+        <div class="mockup-card">
+            <div class="mockup-title">
+                <span id="statusDot"></span>Живой предпросмотр рендера
+            </div>
+            <div class="mockup-display" id="previewDisplay">
+                <div class="mockup-sticker">😎</div>
+            </div>
+        </div>
+
+        <div class="studio-panel">
+            
+            <div class="wheel-wrapper">
+                <div id="picker"></div>
+                <div class="wheel-center-info">
+                    <div class="hex-output" id="hexText">#00FFAA</div>
+                </div>
+            </div>
+
+            <div class="section-title">Дизайнерские пресеты</div>
+            <div class="presets-grid" id="presetsContainer">
+                <button class="preset-btn" style="background: #000000;" data-color="#000000"></button>
+                <button class="preset-btn" style="background: #FFFFFF;" data-color="#FFFFFF"></button>
+                <button class="preset-btn" style="background: #1A1C24;" data-color="#1A1C24"></button>
+                <button class="preset-btn" style="background: #FF3366;" data-color="#FF3366"></button>
+                <button class="preset-btn" style="background: #00E5FF;" data-color="#00E5FF"></button>
+                <button class="preset-btn" style="background: #7000FF;" data-color="#7000FF"></button>
+                <button class="preset-btn" style="background: #FFB300;" data-color="#FFB300"></button>
+                <button class="preset-btn" style="background: #00FF66;" data-color="#00FF66"></button>
+                <button class="preset-btn" style="background: #FF5500;" data-color="#FF5500"></button>
+                <button class="preset-btn" style="background: #0055FF;" data-color="#0055FF"></button>
+            </div>
+
+            <button class="action-button" id="submitColor">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+                Применить для фона
+            </button>
+            
+        </div>
+    </div>
 
     <script>
+        // Инициализация WebApp Telegram
         const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
-        
-        // Настраиваем цветовую палитру iro.js
+
+        // Настройка цветового колеса экспертного уровня
         const colorPicker = new iro.ColorPicker("#picker", {
-            width: 240,
-            color: "#000000",
+            width: 250,
+            color: "#00FFAA",
+            handleRadius: 10,
+            activeHandleRadius: 14,
+            wheelLightness: false, // Отключаем градиент яркости на самом колесе для чистоты цвета
             layout: [
                 { component: iro.ui.Wheel, options: {} },
-                { component: iro.ui.Slider, options: { sliderType: 'value' } }
+                { component: iro.ui.Slider, options: { sliderType: 'value', margin: 25 } } // Выносим слайдер яркости отдельно ниже
             ],
-            // Стилизуем само колесо под общий дизайн
             borderWidth: 2,
-            borderColor: "rgba(255,255,255,0.1)"
+            borderColor: "rgba(255, 255, 255, 0.08)"
         });
 
-        const hexDisplay = document.getElementById('hexDisplay');
-        const glowBg = document.getElementById('glowBg');
-        const btn = document.getElementById('sendColor');
+        const hexText = document.getElementById('hexText');
+        const previewDisplay = document.getElementById('previewDisplay');
+        const neonGlow = document.getElementById('neonGlow');
+        const submitBtn = document.getElementById('submitColor');
+        const presetButtons = document.querySelectorAll('.preset-btn');
 
-        // Следим за изменением цвета в реальном времени
-        colorPicker.on('color:change', function(color) {
+        // Функция триггера легкой премиальной вибрации (Haptic Feedback)
+         McKayHaptic = () => {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        };
+
+        // Логика обновления интерфейса в реальном времени
+        colorPicker.on(['color:change', 'color:init'], function(color) {
             const hex = color.hexString.toUpperCase();
-            hexDisplay.textContent = hex;
             
-            // Динамически меняем свечение и цвет текста под выбранный цвет
-            document.documentElement.style.setProperty('--selected-color', hex);
+            // Обновляем текстовый вывод и переменные стилей
+            hexText.textContent = hex;
+            document.documentElement.style.setProperty('--accent-color', hex);
+            
+            // Превращаем HEX в RGB формат для красивой тени/неона
+            const r = color.rgb.r, g = color.rgb.g, b = color.rgb.b;
+            document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+
+            // Красим фон интерактивного мокапа
+            previewDisplay.style.backgroundColor = hex;
+
+            // Сбрасываем активные пресеты, если крутим колесо вручную
+            presetButtons.forEach(btn => {
+                if (btn.getAttribute('data-color') !== hex) {
+                    btn.classList.remove('active');
+                }
+            });
         });
 
-        // Отправка данных в бот
-        btn.addEventListener('click', () => {
-            const finalColor = colorPicker.color.hexString.toUpperCase();
-            tg.sendData(finalColor);
+        // Отслеживаем момент отпускания пальца с палитры для выдачи вибрации
+        let isInputActive = false;
+        colorPicker.on('input:start', () => { isInputActive = true; });
+        colorPicker.on('input:end', () => { 
+            if (isInputActive) {
+                McKayHaptic();
+                isInputActive = false;
+            }
+        });
+
+        // Обработка кликов по готовым дизайнерским пресетам
+        presetButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const selectedColor = e.target.getAttribute('data-color');
+                
+                McKayHaptic(); // Вибрируем при выборе готового пресета
+                
+                colorPicker.setColor(selectedColor);
+                
+                presetButtons.forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+            });
+        });
+
+        // Финальная отправка данных в бот
+        submitBtn.addEventListener('click', () => {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success'); // Мощный победный вибро-клик
+            }
+            
+            const finalHex = colorPicker.color.hexString.toUpperCase();
+            tg.sendData(finalHex); // Отправляем чистый HEX код обратно в питон-скрипт
         });
     </script>
 </body>
